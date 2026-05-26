@@ -1,12 +1,14 @@
 # Deploying Bible Quotes App to VPS with Docker
 
+Repository: https://github.com/piracki81/bible-quote-piracki81
+
 ## Prerequisites
 
 - A VPS server running Linux (Ubuntu/Debian recommended)
 - SSH access to your server
-- Domain name (optional, but recommended)
+- Domain name (optional, but recommended for SSL)
 
-## Step 1: Install Docker and Docker Compose
+## Step 1: Install Docker
 
 SSH into your VPS and run:
 
@@ -17,42 +19,31 @@ sudo apt update && sudo apt upgrade -y
 # Install Docker
 curl -fsSL https://get.docker.com | sh
 
-# Add your user to docker group (optional, allows running docker without sudo)
+# Add your user to docker group
 sudo usermod -aG docker $USER
 
 # Log out and back in for group changes to take effect
+exit
 
-# Verify installation
+# SSH back in, then verify installation
 docker --version
 docker compose version
 ```
 
-## Step 2: Transfer Files to VPS
-
-From your local machine, transfer the project files:
+## Step 2: Clone Repository and Deploy
 
 ```bash
-# Option A: Using scp
-scp -r /path/to/your/project/* user@your-vps-ip:/home/user/bible-quotes/
-
-# Option B: Using rsync (recommended)
-rsync -avz --exclude 'node_modules' --exclude '.git' /path/to/your/project/ user@your-vps-ip:/home/user/bible-quotes/
-```
-
-## Step 3: Build and Run the Container
-
-SSH into your VPS:
-
-```bash
-cd /home/user/bible-quotes
+# Clone the repository
+git clone https://github.com/piracki81/bible-quote-piracki81.git
+cd bible-quote-piracki81
 
 # Build and start the container
 docker compose up -d --build
 ```
 
-Your app will now be running at `http://your-vps-ip:3000`
+Your app is now running at `http://your-vps-ip:3000`
 
-## Step 4: (Optional) Set Up Reverse Proxy with SSL
+## Step 3: (Optional) Set Up Reverse Proxy with SSL
 
 ### Install Nginx
 
@@ -128,19 +119,26 @@ docker stats bible-quotes-app
 
 ## Updating the App
 
-After making changes to your code:
+When you push changes to GitHub, update on your VPS:
 
 ```bash
-# Transfer updated files to VPS
-rsync -avz --exclude 'node_modules' --exclude '.git' /path/to/your/project/ user@your-vps-ip:/home/user/bible-quotes/
+cd bible-quote-piracki81
 
-# SSH into VPS and rebuild
-cd /home/user/bible-quotes
+# Pull latest changes
+git pull origin main
+
+# Rebuild and restart
 docker compose down
 docker compose up -d --build
 ```
 
-## Firewall Configuration (Optional)
+## One-Liner Update Command
+
+```bash
+cd ~/bible-quote-piracki81 && git pull origin main && docker compose down && docker compose up -d --build
+```
+
+## Firewall Configuration
 
 If you're using UFW:
 
@@ -178,4 +176,12 @@ sudo nginx -t
 
 # Check nginx logs
 sudo tail -f /var/log/nginx/error.log
+```
+
+### Git pull issues
+```bash
+# Reset local changes and pull fresh
+git fetch origin
+git reset --hard origin/main
+docker compose up -d --build
 ```
