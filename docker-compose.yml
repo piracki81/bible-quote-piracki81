@@ -1,0 +1,9 @@
+services:
+  bible-quotes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bible-quotes-app
+    ports:
+      - "3000:80"
+    restart: unless-stopped
